@@ -54,37 +54,40 @@ function main (fileNames: string[]): void {
 // Implement the async version of the above here
 // Your version should not use .then and should use try/catch instead of .catch
 async function mainAsync(fileNames: string[]): Promise<void> {
-    fileNames.forEach((fileName: string) => {
+    for (const fileName of fileNames) {
         console.log(`Running logo detection on ${fileName}`);
         try {
             const [result] = await client.logoDetection(fileName);
             let scores: number[] = [];
             const logos = result.logoAnnotations;
-            logos?.forEach((logo) => {
-                if (logo.description)
-                    console.log(`"${logo.description}" found in file ${fileName}`);
-                if (logo.score)
-                    scores.push(logo.score);
-            });
-            const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-            console.log(`Average score for ${fileName}: ${avg}`);
+            if (logos) {
+                for (const logo of logos) {
+                    if (logo.description) {
+                        console.log(`"${logo.description}" found in file ${fileName}`);
+                    }
+                    if (logo.score) {
+                        scores.push(logo.score);
+                    }
+                }
+            }
+            const avg = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+            console.log(`Average score for ${fileName}: ${avg.toFixed(2)}`);
         } catch (err) {
             if (typeof err === "object" && err !== null && 'code' in err && (err as { code: string }).code === 'ENOENT') {
                 console.log(`File ${fileName} not found`);
             } else {
-                // If err has a 'message' property, log it; otherwise, log a generic error message
                 const message = typeof err === "object" && err !== null && 'message' in err ? (err as { message: string }).message : 'Unknown error';
                 console.log(`An error occurred with file ${fileName}: ${message}`);
             }
         }
-    });
+    }
 }
 
-main([
-    './images/cmu.jpg', 
-    './images/logo-types-collection.jpg', 
-    './images/not-a-file.jpg'
-]);
+// main([
+//     './images/cmu.jpg', 
+//     './images/logo-types-collection.jpg', 
+//     './images/not-a-file.jpg'
+// ]);
 
 mainAsync([
     './images/cmu.jpg', 
